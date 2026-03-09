@@ -20,13 +20,8 @@ dist-ssr
 *.suo
 *.ntvs*
 *.njsproj
-*.sln
-*.sw?
-
 # Exclude heavy local assets and directories
 local/
-sequence/
 *.mp4
 *.zip
 WhatsApp Image*
-Screenshot*
