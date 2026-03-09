@@ -189,6 +189,13 @@ export default function HeroSection() {
                 </div>
             </div>
 
+            <div className="scroll-indicator">
+                <div className="mouse">
+                    <div className="wheel"></div>
+                </div>
+                <span className="text-[10px] tracking-widest text-gray-400 mt-2 font-semibold uppercase">Scroll Down</span>
+            </div>
+
             <main className="scroll-content">
                 <section className="sequence-section" id="section-1"></section>
                 <section className="sequence-section" id="section-2"></section>
