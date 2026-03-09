@@ -180,11 +180,11 @@ export default function HeroSection() {
                     <p>I build AI-driven industrial systems, combining machine learning, engineering, and scalable deployment to solve real-world industrial problems.</p>
                 </div>
                 <div className="text-container fixed-text" id="text-2">
-                    <h2>The Multidisciplinary Trifecta</h2>
+                    <h2>Three Core Areas</h2>
                     <p>Bridging deep research, applied ML engineering, and scalable industrial systems.</p>
                 </div>
                 <div className="text-container fixed-text" id="text-3">
-                    <h2>Engineering & Science</h2>
+                    <h2>Engineering and AI</h2>
                     <p>Statistical ML • Hardware-constrained AI • Multi-agent systems for industrial intelligence</p>
                 </div>
             </div>
