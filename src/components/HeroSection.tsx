@@ -71,12 +71,18 @@ export default function HeroSection() {
             ctx.drawImage(img, cx, cy, cw, ch, 0, 0, w, h);
         }
 
-        // 3. Define Sequences
+        // 3. Define Sequences and Optimization Stride
+        // We skip every 2 frames to reduce memory and load times by 66%
+        const STRIDE = 3;
+
         const sequences = [
-            { folder: "s1", frameCount: 240, sectionId: "#section-1" },
-            { folder: "s2", frameCount: 240, sectionId: "#section-2" },
-            { folder: "s3", frameCount: 240, sectionId: "#section-3" },
-        ];
+            { folder: "s1", totalFrames: 240, sectionId: "#section-1" },
+            { folder: "s2", totalFrames: 240, sectionId: "#section-2" },
+            { folder: "s3", totalFrames: 240, sectionId: "#section-3" },
+        ].map(seq => ({
+            ...seq,
+            loadedFrames: Math.floor(seq.totalFrames / STRIDE)
+        }));
 
         const allImages: HTMLImageElement[][] = [];
         let currentSeqIndex = 0;
@@ -90,10 +96,13 @@ export default function HeroSection() {
 
         sequences.forEach((seq) => {
             const images: HTMLImageElement[] = [];
-            for (let i = 1; i <= seq.frameCount; i++) {
-                const img = new Image();
-                img.src = `/sequence/${seq.folder}/ezgif-frame-${pad(i, 3)}.jpg`;
-                images.push(img);
+            // Only load frames matching our stride (e.g., 3, 6, 9...)
+            for (let i = 1; i <= seq.totalFrames; i++) {
+                if (i % STRIDE === 0) {
+                    const img = new Image();
+                    img.src = `/sequence/${seq.folder}/ezgif-frame-${pad(i, 3)}.jpg`;
+                    images.push(img);
+                }
             }
             allImages.push(images);
         });
@@ -123,7 +132,8 @@ export default function HeroSection() {
         sequences.forEach((seq, index) => {
             const obj = { frame: 0 };
             const trigger = gsap.to(obj, {
-                frame: seq.frameCount - 1,
+                // Animate over the reduced array length, not the original 240
+                frame: seq.loadedFrames - 1,
                 snap: "frame",
                 ease: "none",
                 scrollTrigger: {
@@ -133,7 +143,9 @@ export default function HeroSection() {
                     scrub: 0.5,
                     onUpdate: () => {
                         currentSeqIndex = index;
-                        currentFrameIndex = Math.round(obj.frame);
+                        // Protect against out of bounds rounding errors
+                        const maxIndex = allImages[index] ? allImages[index].length - 1 : 0;
+                        currentFrameIndex = Math.min(Math.round(obj.frame), maxIndex);
                         render();
                     },
                 },
