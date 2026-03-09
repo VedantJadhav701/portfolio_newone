@@ -111,9 +111,9 @@ export default function HeroSection() {
             if (!allImages[currentSeqIndex]) return;
             const img = allImages[currentSeqIndex][currentFrameIndex];
 
-            // On mobile, shift the focal point to the left (0.2) to keep the boy visible
+            // On mobile, pin the focal point entirely to the left (0) to keep the boy perfectly visible
             const isMobile = window.innerWidth < 768;
-            const offsetX = isMobile ? 0.2 : 0.5;
+            const offsetX = isMobile ? 0 : 0.5;
 
             if (img && img.complete) {
                 drawImageProp(context, img, offsetX);
