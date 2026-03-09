@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offroad Portfolio Game</title>
+    <style>
+        body { margin: 0; overflow: hidden; font-family: 'Segoe UI', sans-serif; }
+        canvas { display: block; }
+        
+        #ui-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            pointer-events: none;
+        }
+
+        .checkpoint-card {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            display: none;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .checkpoint-card h2 { color: #2ecc71; margin-top: 0; }
+        .checkpoint-card button { 
+            background: #2ecc71; color: white; border: none; 
+            padding: 10px 20px; border-radius: 5px; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div id="ui-overlay">
+    <b>Controls:</b> WASD or Arrow Keys to drive<br>
+    <b>Goal:</b> Drive through the glowing markers!
+</div>
+
+<!-- Checkpoint Information Panels -->
+<div id="cp-1" class="checkpoint-card">
+    <h2>Meet the Developer</h2>
+    <p>Hi! I'm a Full-Stack Developer specializing in 3D Web Experiences. I love blending code and creativity.</p>
+    <button onclick="closeCard('cp-1')">Keep Driving</button>
+</div>
+
+<div id="cp-2" class="checkpoint-card">
+    <h2>Tech Stack</h2>
+    <p><b>Languages:</b> JavaScript, TypeScript, Python<br><b>Frameworks:</b> React, Three.js, Node.js</p>
+    <button onclick="closeCard('cp-2')">Keep Driving</button>
+</div>
+
+<div id="cp-3" class="checkpoint-card">
+    <h2>Recent Projects</h2>
+    <p>Check out my work on GitHub! I've built physics engines, SaaS platforms, and interactive art.</p>
+    <button onclick="closeCard('cp-3')">Finish Journey</button>
+</div>
+
+<script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js"
+        }
+    }
+</script>
+
+<script type="module">
+    import * as THREE from 'three';
+
+    // --- SETUP ---
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x87ceeb); // Sky blue
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    document.body.appendChild(renderer.domElement);
+
+    // --- LIGHTS ---
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+    const sun = new THREE.DirectionalLight(0xffffff, 1);
+    sun.position.set(10, 20, 10);
+    sun.castShadow = true;
+    scene.add(sun);
+
+    // --- TERRAIN ---
+    const floorGeo = new THREE.PlaneGeometry(200, 200);
+    const floorMat = new THREE.MeshStandardMaterial({ color: 0x3d5e3a });
+    const floor = new THREE.Mesh(floorGeo, floorMat);
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+    scene.add(floor);
+
+    // Simple bumps for "offroad" feel
+    for(let i=0; i<50; i++) {
+        const rock = new THREE.Mesh(
+            new THREE.BoxGeometry(2, Math.random() * 2, 2),
+            new THREE.MeshStandardMaterial({ color: 0x888888 })
+        );
+        rock.position.set(Math.random()*160-80, 0, Math.random()*160-80);
+        scene.add(rock);
+    }
+
+    // --- CAR SETUP ---
+    const carGroup = new THREE.Group();
+    
+    // Body (High Offroad Chassis)
+    const body = new THREE.Mesh(
+        new THREE.BoxGeometry(2, 0.8, 4),
+        new THREE.MeshStandardMaterial({ color: 0xff4444 })
+    );
+    body.position.y = 1;
+    body.castShadow = true;
+    carGroup.add(body);
+
+    // Cabin
+    const cabin = new THREE.Mesh(
+        new THREE.BoxGeometry(1.5, 0.7, 1.5),
+        new THREE.MeshStandardMaterial({ color: 0x333333 })
+    );
+    cabin.position.set(0, 1.7, -0.2);
+    carGroup.add(cabin);
+
+    // Wheels
+    const wheelGeo = new THREE.CylinderGeometry(0.5, 0.5, 0.4, 16);
+    const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
+    const createWheel = (x, z) => {
+        const wheel = new THREE.Mesh(wheelGeo, wheelMat);
+        wheel.rotation.z = Math.PI / 2;
+        wheel.position.set(x, 0.5, z);
+        carGroup.add(wheel);
+    };
+    createWheel(1.1, 1.5);  // Front Right
+    createWheel(-1.1, 1.5); // Front Left
+    createWheel(1.1, -1.5); // Back Right
+    createWheel(-1.1, -1.5);// Back Left
+
+    scene.add(carGroup);
+
+    // --- CHECKPOINTS ---
+    const checkpoints = [
+        { x: 10, z: -10, id: 'cp-1', active: true, color: 0x00ff00 },
+        { x: -20, z: -40, id: 'cp-2', active: true, color: 0xffff00 },
+        { x: 30, z: -70, id: 'cp-3', active: true, color: 0xff00ff },
+    ];
+
+    checkpoints.forEach(cp => {
+        const marker = new THREE.Mesh(
+            new THREE.TorusGeometry(3, 0.2, 16, 100),
+            new THREE.MeshBasicMaterial({ color: cp.color })
+        );
+        marker.position.set(cp.x, 3, cp.z);
+        marker.name = cp.id;
+        scene.add(marker);
+        cp.mesh = marker;
+    });
+
+    // --- PHYSICS & CONTROLS ---
+    let speed = 0;
+    let rotation = 0;
+    const keys = { w: false, s: false, a: false, d: false };
+
+    window.addEventListener('keydown', (e) => keys[e.key.toLowerCase()] = true);
+    window.addEventListener('keyup', (e) => keys[e.key.toLowerCase()] = false);
+
+    window.closeCard = (id) => {
+        document.getElementById(id).style.display = 'none';
+        isPaused = false;
+    };
+
+    let isPaused = false;
+
+    function update() {
+        if (isPaused) return;
+
+        // Drive logic
+        if (keys.w) speed += 0.01;
+        if (keys.s) speed -= 0.01;
+        if (keys.a) rotation += 0.03 * (speed > 0.1 || speed < -0.1 ? 1 : 0);
+        if (keys.d) rotation -= 0.03 * (speed > 0.1 || speed < -0.1 ? 1 : 0);
+
+        // Friction
+        speed *= 0.98;
+        
+        // Apply Movement
+        carGroup.position.x += Math.sin(rotation) * speed;
+        carGroup.position.z += Math.cos(rotation) * speed;
+        carGroup.rotation.y = rotation;
+
+        // "Offroad" bouncy effect
+        carGroup.position.y = Math.sin(Date.now() * 0.01) * 0.05 * speed;
+
+        // Camera Follow
+        const camOffset = new THREE.Vector3(
+            Math.sin(rotation) * -15, 
+            8, 
+            Math.cos(rotation) * -15
+        );
+        camera.position.lerp(carGroup.position.clone().add(camOffset), 0.1);
+        camera.lookAt(carGroup.position);
+
+        // Checkpoint Detection
+        checkpoints.forEach(cp => {
+            if (cp.active) {
+                const dist = carGroup.position.distanceTo(new THREE.Vector3(cp.x, 0, cp.z));
+                cp.mesh.rotation.y += 0.05; // Spin marker
+                
+                if (dist < 5) {
+                    cp.active = false;
+                    cp.mesh.visible = false;
+                    document.getElementById(cp.id).style.display = 'block';
+                    isPaused = true;
+                    speed = 0; // Stop car
+                }
+            }
+        });
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+        update();
+        renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // Handle Resize
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+</script>
+
+</body>
+</html>
