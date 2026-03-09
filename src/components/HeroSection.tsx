@@ -206,7 +206,7 @@ export default function HeroSection() {
                 <div className="mouse">
                     <div className="wheel"></div>
                 </div>
-                <span className="text-[10px] tracking-widest text-gray-400 mt-2 font-semibold uppercase">Scroll Down</span>
+                <span className="text-sm tracking-widest text-[#ffffff] mt-3 font-bold uppercase drop-shadow-[0_2px_2px_rgba(0,0,0,1)]">Scroll Down</span>
             </div>
 
             <main className="scroll-content">

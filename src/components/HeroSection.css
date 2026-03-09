@@ -5,7 +5,7 @@
     left: 0;
     width: 100vw;
     height: 100vh;
-    z-index: 0; 
+    z-index: 0;
 }
 
 canvas {
@@ -16,13 +16,13 @@ canvas {
 
 .scroll-content {
     position: relative;
-    z-index: 10; 
+    z-index: 10;
 }
 
 .sequence-section {
     position: relative;
     width: 100vw;
-    height: 250vh; 
+    height: 250vh;
     display: flex;
     align-items: flex-end;
     justify-content: flex-end;
@@ -49,7 +49,7 @@ canvas {
 
 .text-container {
     text-align: right;
-    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8); 
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
 }
 
 .text-container h2 {
@@ -78,7 +78,7 @@ canvas {
         padding: 0;
         text-align: right;
     }
-    
+
     .text-container h2 {
         font-size: 2.25rem;
     }
@@ -86,11 +86,11 @@ canvas {
     .text-container p {
         font-size: 1.1rem;
     }
-    
+
     .sequence-section {
         padding: 5vh 5vw;
     }
-    
+
     .fixed-text-container {
         width: 86vw;
         right: 7vw;
@@ -108,30 +108,52 @@ canvas {
     align-items: center;
     z-index: 20;
     pointer-events: none;
-    opacity: 0.8;
+    animation: indicatorPulse 2.5s infinite;
+    filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.8));
+}
+
+@keyframes indicatorPulse {
+
+    0%,
+    100% {
+        opacity: 0.7;
+    }
+
+    50% {
+        opacity: 1;
+        text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+    }
 }
 
 .mouse {
-    width: 24px;
-    height: 38px;
-    border: 2px solid #ccc;
+    width: 32px;
+    height: 50px;
+    border: 3px solid #fff;
     border-radius: 20px;
     display: flex;
     justify-content: center;
-    padding-top: 6px;
+    padding-top: 8px;
+    background-color: rgba(0, 0, 0, 0.2);
 }
 
 .wheel {
-    width: 4px;
-    height: 8px;
+    width: 6px;
+    height: 10px;
     background: #fff;
-    border-radius: 2px;
+    border-radius: 3px;
     animation: scrollWheel 1.5s infinite;
 }
 
 @keyframes scrollWheel {
-    0% { transform: translateY(0); opacity: 1; }
-    100% { transform: translateY(14px); opacity: 0; }
+    0% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateY(18px);
+        opacity: 0;
+    }
 }
 
 .gallery-section {
